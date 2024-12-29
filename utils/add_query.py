@@ -3,7 +3,7 @@ import geopandas as gpd
 from dotenv import load_dotenv
 import os
 import requests
-import tqdm
+from tqdm import tqdm
 import random
 import csv
 import datetime
