@@ -2,6 +2,7 @@ import pandas as pd
 from dotenv import load_dotenv
 import os
 import requests
+import tqdm
 
 load_dotenv() 
 BUS_TIME_KEY = os.getenv("BUS_TIME_KEY")
@@ -73,9 +74,41 @@ def get_stop_data(stop):
 
 def get_gap(stop):
     df = get_stop_data(stop)
-    df['gap'] = pd.to_datetime(df['ExpectedArrivalTime']) - pd.to_datetime(df['AimedArrivalTime'])
+    
+    if df.empty:
+        return pd.DataFrame()
+    
+    # Check if the required column exists
+    if 'MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime' not in df.columns:
+        return pd.DataFrame()
+    
+    # Drop rows with missing values in the specified column
+    df.dropna(subset=['MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime'], inplace=True)
+    
+    # If the DataFrame is empty after dropping rows, return an empty DataFrame
+    if df.empty:
+        return pd.DataFrame()
+    df['gap'] =  pd.to_datetime(df['MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime']) - pd.to_datetime(df['MonitoredVehicleJourney.MonitoredCall.AimedArrivalTime'])
     df['gap'] = df['gap'].dt.total_seconds() / 60
     df['absolute_gap'] = df['gap'].abs()
     mean_gap = df['absolute_gap'].mean()
     stop_gap_df = pd.DataFrame({'stop': [stop], 'mean_gap': [mean_gap]})
     return stop_gap_df
+
+def gap_for_stops(stop_list):
+    df = pd.DataFrame()
+    
+    for stop in tqdm(stop_list):
+        try:
+            stop_df = get_gap(stop)
+            
+            # Only concatenate non-empty DataFrames
+            if not stop_df.empty:
+                df = pd.concat([df, stop_df], ignore_index=True)
+
+        except Exception as e:
+            # Log the error and continue to the next stop
+            print(f"Error processing stop {stop}: {e}")
+            continue
+
+    return df
