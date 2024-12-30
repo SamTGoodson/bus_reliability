@@ -37,8 +37,9 @@ rolling_map = rolling_map.to_crs(epsg=4326)
 geojson_data = json.loads(rolling_map.to_json())
 
 
-classes = [0, 1, 2, 3, 4, 5, 10, 20]
-colorscale = ['#FFEDA0', '#FED976', '#FEB24C', '#FD8D3C', '#FC4E2A', '#E31A1C', '#BD0026', '#800026']
+classes = [0, 1, 2, 3, 4, 5, 7, 9,11,13, 15,17]
+colorscale = ['#FFEDA0', '#FED976', '#FEB24C', '#FD8D3C', '#FC4E2A', '#E31A1C', '#BD0026', '#800026',
+              '#660022', '#440016', '#33000F', '#20000A']
 style = dict(weight=2, opacity=1, color='white', dashArray='3', fillOpacity=0.7)
 
 ctg = ["{}+".format(cls, classes[i + 1]) for i, cls in enumerate(classes[:-1])] + ["{}+".format(classes[-1])]
@@ -83,7 +84,7 @@ app.layout = html.Div([
                        hoverStyle=arrow_function(dict(weight=5, color='#666', dashArray='')),
                        hideout=dict(colorscale=colorscale, classes=classes, style=style, colorProp="rolling_avg")),
             dl.GeoJSON(data=bus_geojson,
-                       options=dict(style=dict(color="#00FF00", weight=3, opacity=0.9, dashArray="4"))),
+                       options=dict(style=dict(color="#00FF00", weight=3, opacity=1))),
             colorbar, info
         ], style={'width': '100%', 'height': '75vh', 'padding-bottom': '20px', 'margin-bottom': '50px'})
     ]),
