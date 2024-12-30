@@ -18,15 +18,15 @@ oba_meta_url = "https://bustime.mta.info/api/where/routes-for-agency/MTA%20NYCT.
 siri_vm_url = "https://bustime.mta.info/api/siri/vehicle-monitoring.json"
 siri_sm_url = 'https://bustime.mta.info/api/siri/stop-monitoring.json'
 
-ntas = gpd.read_file("../shapefiles/nynta2020_24d")
+ntas = gpd.read_file("shapefiles/nynta2020_24d")
 
-with open('../static_data/location_dict.pickle', 'rb') as handle:
+with open('static_data/location_dict.pickle', 'rb') as handle:
     location_dict = pickle.load(handle)
 
-with open('../static_data/NTA_dict.pickle', 'rb') as handle:
+with open('static_data/NTA_dict.pickle', 'rb') as handle:
     NTA_dict = pickle.load(handle)
 
-with open('../static_data/stops.pickle', 'rb') as handle:
+with open('static_data/stops.pickle', 'rb') as handle:
     list_of_stops = pickle.load(handle)
 
 def get_stop_data(stop):
@@ -104,7 +104,7 @@ def main():
     args = parser.parse_args()
     count = int(args.count)
     data = agg_new_data(count)
-    write_to_csv(data, '../static_data/rolling_avg.csv')
+    write_to_csv(data, 'static_data/rolling_avg.csv')
 
 if __name__ == "__main__":
     main()
