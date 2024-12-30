@@ -9,70 +9,15 @@ import dash_leaflet.express as dlx
 from dash_extensions.javascript import arrow_function, assign
 import json
 
+from utils.sort_and_join import month_dict, produce_rolling, make_table, join_tables
+from utils.style import style_handle, get_info
 
 
-month_dict = {
-    1 : 'January',
-    2 : 'February',
-    3 : 'March',
-    4 : 'April',
-    5 : 'May',
-    6 : 'June',
-    7 : 'July',
-    8 : 'August',
-    9 : 'September',
-    10 : 'October',
-    11 : 'November',
-    12 : 'December'
-}
 
-
-def produce_rolling(df,window_size,min):
-    df['date'] = pd.to_datetime(df['date'])
-    df = df.sort_values(by=['NTAName', 'date'])
-    df['avg_imputed'] = df.groupby('NTAName')['avg'].transform(lambda x: x.fillna(x.mean()))
-    df['rolling_avg'] = df.groupby('NTAName')['avg_imputed'].rolling(window=window_size, min_periods=min).mean().reset_index(level=0, drop=True)
-    return df
-
-def make_table(df,month_dict):
-    df['month_name'] = df['month'].map(month_dict)
-    month = df['month_name'].unique()[0]
-    boroughs = df.groupby('borough')['average_road_speed'].mean().reset_index(name='raw_speed')
-    whole_city = df['average_road_speed'].mean()
-    table = pd.DataFrame({'borough': 'NYC Whole', 'raw_speed': whole_city}, index=[0])
-    boroughs = pd.concat([boroughs, table], ignore_index=True)
-    boroughs[f'{month}_avg_speed'] = boroughs['raw_speed'].round(1)
-    return boroughs
-
-def join_tables(df1,df2,month_dict):
-    tb1 = make_table(df1,month_dict)
-    tb2 = make_table(df2,month_dict)
-    tables = tb1.merge(tb2,on='borough')
-    drop_cols = [col for col in tables.columns if 'raw_speed' in col]
-    tables.drop(columns=drop_cols,inplace=True)
-    return tables
-
-style_handle = assign("""function(feature, context){
-    const {classes, colorscale, style, colorProp} = context.hideout;  // get props from hideout
-    const value = feature.properties[colorProp];  // get value the determines the color
-    for (let i = 0; i < classes.length; ++i) {
-        if (value > classes[i]) {
-            style.fillColor = colorscale[i];  // set the fill color according to the class
-        }
-    }
-    return style;
-}""")
-
-
-def get_info(feature=None):
-    header = [html.H4("On Time Rating")]
-    if not feature:
-        return header + [html.P("Hoover over a district")]
-    return header + [html.B(feature["properties"]["NTAName"]), html.Br(),
-                     "{} minutes off schedule".format(round(feature["properties"]["rolling_avg"],2))]
 
 ntas = gpd.read_file("shapefiles/nynta2020_24d")
 df = pd.read_csv('static_data/rolling_avg.csv')
+df['date'] = pd.to_datetime(df['date'])
 scrape_date = df['date'].max().strftime('on %m/%d/%Y at %H:%M')
 
 with open("shapefiles/segments.geojson", "r") as f:
@@ -146,7 +91,7 @@ app.layout = html.Div([
     ])
     ,
     html.Div([
-        html.H2("On-Time Rating Data", style={'font-family': 'Georgia', 'textAlign': 'center', 'margin-top': '20px'}),
+        html.H2("Avg. Bus Speed by Borough", style={'font-family': 'Georgia', 'textAlign': 'center', 'margin-top': '20px'}),
         dash_table.DataTable(
             data=table_rows,
             columns=table_columns,

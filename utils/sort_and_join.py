@@ -5,7 +5,7 @@ import os
 from shapely.geometry import Point,LineString
 import json
 
-ntas = gpd.read_file("../shapefiles/nynta2020_24d")
+ntas = gpd.read_file("shapefiles/nynta2020_24d")
 df = pd.read_csv('static_data/rolling_avg.csv')
 
 month_dict = {
