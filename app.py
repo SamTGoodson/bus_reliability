@@ -7,12 +7,9 @@ import dash_bootstrap_components as dbc
 import dash_leaflet as dl
 import dash_leaflet.express as dlx
 from dash_extensions.javascript import arrow_function, assign
-import plotly.figure_factory as ff
-
-
 import json
 
-from matplotlib import cm, colors
+
 
 month_dict = {
     1 : 'January',
@@ -28,6 +25,14 @@ month_dict = {
     11 : 'November',
     12 : 'December'
 }
+
+
+def produce_rolling(df,window_size,min):
+    df['date'] = pd.to_datetime(df['date'])
+    df = df.sort_values(by=['NTAName', 'date'])
+    df['avg_imputed'] = df.groupby('NTAName')['avg'].transform(lambda x: x.fillna(x.mean()))
+    df['rolling_avg'] = df.groupby('NTAName')['avg_imputed'].rolling(window=window_size, min_periods=min).mean().reset_index(level=0, drop=True)
+    return df
 
 def make_table(df,month_dict):
     df['month_name'] = df['month'].map(month_dict)
@@ -58,12 +63,6 @@ style_handle = assign("""function(feature, context){
     return style;
 }""")
 
-def produce_rolling(df,window_size,min):
-    df['date'] = pd.to_datetime(df['date'])
-    df = df.sort_values(by=['NTAName', 'date'])
-    df['avg_imputed'] = df.groupby('NTAName')['avg'].transform(lambda x: x.fillna(x.mean()))
-    df['rolling_avg'] = df.groupby('NTAName')['avg_imputed'].rolling(window=window_size, min_periods=min).mean().reset_index(level=0, drop=True)
-    return df
 
 def get_info(feature=None):
     header = [html.H4("On Time Rating")]
@@ -74,6 +73,7 @@ def get_info(feature=None):
 
 ntas = gpd.read_file("shapefiles/nynta2020_24d")
 df = pd.read_csv('static_data/rolling_avg.csv')
+scrape_date = df['date'].max().strftime('on %m/%d/%Y at %H:%M')
 
 with open("shapefiles/segments.geojson", "r") as f:
     bus_geojson = json.load(f)
@@ -126,6 +126,7 @@ app.layout = html.Div([
         html.H1("NYC Bus On Time Rating", style={'font-family': 'Georgia', 'padding': '10px', 'textAlign': 'center'}),
         html.P("The map below shows two metrics for bus performance in NYC. The color of the tiles represents a rolling average of on-time arrivals for each Neighborhood Tabulation Area (NTA) in NYC. The on-time rating is calculated as the average number of minutes each bus is off schedule in either direction. The green lines represent the slowest segments of bus routes in NYC. Hover over a district to see the name and on-time rating."),
         html.P("The on-time data is collected from the MTA's Bus Time API and is scraped everyday at rush hour. Bus speeds are collected from the NYC Open Data and are updated monthly. See table below map for average speeds by borough."),
+        html.P(f"On-time data last scraped {scrape_date}", style={'font-style': 'italic'}),
     ], style={'font-family': 'Georgia', 'padding': '10px', 'textAlign': 'center'}),
 
     html.Div([
