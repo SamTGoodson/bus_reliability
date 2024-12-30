@@ -69,10 +69,10 @@ info = html.Div(children=get_info(), id="info", className="info",
 app.layout = html.Div([
     html.Div([
         html.H1("NYC Bus Speed and Reliability", style={'font-family': 'Georgia', 'padding': '10px', 'textAlign': 'center'}),
-        html.P("The map below shows two metrics for bus performance in NYC. The color of the tiles represents a rolling average of on-time arrivals for each Neighborhood Tabulation Area (NTA) in NYC. This was calculated by averaging the absolute difference in minutes between expected arrival and actual arrival for all stops in the NTA. The green lines represent the slowest segments of bus routes in NYC."),
-        html.P("The on-time data is collected from the MTA's Bus Time API and is scraped everyday at rush hour. Bus speeds are collected from the NYC Open Data and are updated monthly. See table below map for average speeds by borough."),
+        html.P("The map below shows two metrics for bus performance in NYC. The color of the tiles represents a rolling average of on-time arrivals for each Neighborhood Tabulation Area (NTA) in NYC. This was calculated by averaging the absolute difference in minutes between expected arrival and actual arrival for all stops in the NTA. The green lines represent the slowest segments of bus routes in NYC during Wednesday AM and PM rush hour."),
+        html.P("The on-time data is collected from the MTA's Bus Time API and is queried everyday at rush hour. Bus speeds are collected from the NYC Open Data and are updated monthly. See table below map for average speeds by borough."),
         html.P("Hover over a tile to see the NTA name and the average minutes off schedule. Click on a tile to zoom in and see the NTA boundaries."),
-        html.P(f"On-time data last scraped {scrape_date}", style={'font-style': 'italic'}),
+        html.P(f"On-time data last queried {scrape_date}", style={'font-style': 'italic'}),
     ], style={'font-family': 'Georgia', 'padding': '10px', 'textAlign': 'center'}),
 
     html.Div([
@@ -88,7 +88,7 @@ app.layout = html.Div([
         ], style={'width': '100%', 'height': '75vh', 'padding-bottom': '20px', 'margin-bottom': '50px'})
     ]),
     html.Div([
-        html.P("The table below shows the average speed of buses in each borough. The data is collected from the NYC Open Data and is updated monthly. We are still waiting on December numbers, this will probably be the most immediately revealing of congestion pricing success but we may not know until February."), 
+        html.P("The table below shows the average speed of buses in each borough during Wednesday AM and PM rush hour. The data is collected from the NYC Open Data and is updated monthly. We are still waiting on December numbers, this will probably be the most immediately revealing of congestion pricing success but we may not know until February."), 
     ])
     ,
     html.Div([

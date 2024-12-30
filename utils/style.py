@@ -15,6 +15,6 @@ style_handle = assign("""function(feature, context){
 def get_info(feature=None):
     header = [html.H4("On Time Rating")]
     if not feature:
-        return header + [html.P("Hoover over a district")]
+        return header + [html.P("Hover over a district")]
     return header + [html.B(feature["properties"]["NTAName"]), html.Br(),
                      "{} minutes off schedule".format(round(feature["properties"]["rolling_avg"],2))]

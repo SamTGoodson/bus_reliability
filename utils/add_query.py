@@ -13,6 +13,10 @@ import argparse
 load_dotenv() 
 BUS_TIME_KEY = os.getenv("BUS_TIME_KEY")
 
+
+if not BUS_TIME_KEY:
+    raise ValueError("API_KEY is not set in the environment variables.")
+
 oba_url = "https://bustime.mta.info/api/where/stops-for-location.json"
 oba_meta_url = "https://bustime.mta.info/api/where/routes-for-agency/MTA%20NYCT.xml"
 siri_vm_url = "https://bustime.mta.info/api/siri/vehicle-monitoring.json"
