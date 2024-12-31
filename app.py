@@ -2,6 +2,7 @@ import pandas as pd
 import geopandas as gpd
 import os
 from dotenv import load_dotenv
+import base64
 
 from dash import Dash, html, Output, Input, dash_table
 import dash_bootstrap_components as dbc
@@ -18,9 +19,13 @@ from utils.sort_and_join import month_dict, produce_rolling, make_table, join_ta
 from utils.style import style_handle, get_info
 
 load_dotenv()
-credentials_path = os.getenv('GOOGLE_CREDENTIALS')
+encoded_key = os.getenv('GOOGLE_CREDENTIALS_BASE64')
+json_key = base64.b64decode(encoded_key).decode('utf-8')
+with open('service_account_key.json', 'w') as key_file:
+    key_file.write(json_key)
+
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name('service_account_key.json', scope)
 client = gspread.authorize(creds)
 sheet_id = '144aqQL8BLJGJNGnUU_UlyMVoMED_1CM-6SQjgO_xJBQ'
 sheet = client.open_by_key(sheet_id).sheet1 
