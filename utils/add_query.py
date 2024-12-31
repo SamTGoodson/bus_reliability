@@ -11,14 +11,17 @@ import pickle
 import argparse
 from oauth2client.service_account import ServiceAccountCredentials
 import gspread
-
+import base64
 
 load_dotenv() 
 BUS_TIME_KEY = os.getenv("BUS_TIME_KEY")
-credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+encoded_key = os.getenv('GOOGLE_CREDENTIALS_BASE64')
+json_key = base64.b64decode(encoded_key).decode('utf-8')
+with open('service_account_key.json', 'w') as key_file:
+    key_file.write(json_key)
 
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name('service_account_key.json', scope)
 client = gspread.authorize(creds)
 sheet_id = '144aqQL8BLJGJNGnUU_UlyMVoMED_1CM-6SQjgO_xJBQ'
 
