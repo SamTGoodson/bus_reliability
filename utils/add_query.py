@@ -9,9 +9,18 @@ import csv
 import datetime
 import pickle
 import argparse
+from oauth2client.service_account import ServiceAccountCredentials
+import gspread
+
 
 load_dotenv() 
 BUS_TIME_KEY = os.getenv("BUS_TIME_KEY")
+credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
+client = gspread.authorize(creds)
+sheet_id = '144aqQL8BLJGJNGnUU_UlyMVoMED_1CM-6SQjgO_xJBQ'
 
 
 if not BUS_TIME_KEY:
@@ -101,14 +110,28 @@ def write_to_csv(data, file):
             writer_object.writerow(row[1])
         f.close()
 
+def wrtie_to_sheet(sheet_id,data,delete_old=False):
+    sheet = client.open_by_key(sheet_id).sheet1
+    data_length = len(data)
+    data['date'] = data['date'].astype(str)
+    data_to_append = data.values.tolist()
+    sheet.append_rows(data_to_append, value_input_option="USER_ENTERED")
+    print(f"{data_length} rows added to the sheet")
+    if delete_old:
+        sheet.delete_rows(2, data_length)
+
 def main():
     parser = argparse.ArgumentParser(description='Get bus time data')
     parser.add_argument('count', help='Number of stops to get data for')
+    parser.add_argument('--sheet', help='Write data to google sheet', action='store_true')
     
     args = parser.parse_args()
     count = int(args.count)
     data = agg_new_data(count)
-    write_to_csv(data, 'static_data/rolling_avg.csv')
+    if args.sheet:
+        wrtie_to_sheet(sheet_id,data,delete_old=True)
+    else:
+        write_to_csv(data, 'static_data/rolling_avg.csv')
 
 if __name__ == "__main__":
     main()

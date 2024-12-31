@@ -1,5 +1,7 @@
 import pandas as pd
 import geopandas as gpd
+import os
+from dotenv import load_dotenv
 
 from dash import Dash, html, Output, Input, dash_table
 import dash_bootstrap_components as dbc
@@ -9,14 +11,25 @@ import dash_leaflet.express as dlx
 from dash_extensions.javascript import arrow_function, assign
 import json
 
-from utils.sort_and_join import month_dict, produce_rolling, make_table, join_tables
+from oauth2client.service_account import ServiceAccountCredentials
+import gspread
+
+from utils.sort_and_join import month_dict, produce_rolling, make_table, join_tables,clean_spreadsheet
 from utils.style import style_handle, get_info
 
-
-
+load_dotenv()
+credentials_path = os.getenv('GOOGLE_CREDENTIALS')
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
+client = gspread.authorize(creds)
+sheet_id = '144aqQL8BLJGJNGnUU_UlyMVoMED_1CM-6SQjgO_xJBQ'
+sheet = client.open_by_key(sheet_id).sheet1 
+data = sheet.get_all_records()
+df = pd.DataFrame(data)
+df = clean_spreadsheet(df)
 
 ntas = gpd.read_file("shapefiles/nynta2020_24d")
-df = pd.read_csv('static_data/rolling_avg.csv')
+#df = pd.read_csv('static_data/rolling_avg.csv')
 df['date'] = pd.to_datetime(df['date'])
 scrape_date = df['date'].max().strftime('on %m/%d/%Y at %H:%M')
 

@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import os
 from shapely.geometry import Point,LineString
 import json
+import numpy as np
 
 ntas = gpd.read_file("shapefiles/nynta2020_24d")
 df = pd.read_csv('static_data/rolling_avg.csv')
@@ -82,3 +83,9 @@ def join_tables(df1,df2,month_dict):
     drop_cols = [col for col in tables.columns if 'raw_speed' in col]
     tables.drop(columns=drop_cols,inplace=True)
     return tables
+
+def clean_spreadsheet(df):
+    df = df.map(lambda x: np.nan if x == '' else x)
+    df.dropna(how="all",inplace=True)
+    df.dropna(subset=["date"],inplace=True) 
+    return df
