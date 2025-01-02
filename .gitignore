@@ -172,4 +172,4 @@ cython_debug/
 
 /credentials
 /credentials/google_credentials.json
-.ipynb
+test.ipynb
