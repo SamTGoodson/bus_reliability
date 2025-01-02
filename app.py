@@ -3,6 +3,7 @@ import geopandas as gpd
 import os
 from dotenv import load_dotenv
 import base64
+import pytz
 
 from dash import Dash, html, Output, Input, dash_table
 import dash_bootstrap_components as dbc
@@ -35,7 +36,9 @@ df = clean_spreadsheet(df)
 
 ntas = gpd.read_file("shapefiles/nynta2020_24d")
 #df = pd.read_csv('static_data/rolling_avg.csv')
+local_tz = pytz.timezone('America/New_York')
 df['date'] = pd.to_datetime(df['date'])
+df['date'] = df['date'].dt.tz_localize('UTC').dt.tz_convert(local_tz)
 scrape_date = df['date'].max().strftime('on %m/%d/%Y at %H:%M')
 
 with open("shapefiles/segments.geojson", "r") as f:
@@ -45,7 +48,7 @@ oct_speed = pd.read_csv('static_data/raw_oct_speed.csv')
 nov_speed = pd.read_csv('static_data/raw_nov_speed.csv')
 
 
-rolling_df = produce_rolling(df,3,1)
+rolling_df = produce_rolling(df,4,1)
 most_recent_df = rolling_df.loc[rolling_df.groupby('NTAName')['date'].idxmax()]
 rolling_map = ntas.merge(most_recent_df, left_on='NTAName', right_on='NTAName')
 rolling_map.dropna(subset=['rolling_avg'],inplace=True)
